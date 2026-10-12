@@ -1,0 +1,25 @@
+{
+  "fid": 352.5731870305244,
+  "fid_real": 100.50202961316184,
+  "kid": 0.30879026651382446,
+  "kid_std": 0.008026078343391418,
+  "kid_real": -0.00039379121153615415,
+  "nearest_cosine_mean": 0.5890843272209167,
+  "dataset": "dataset_64_v0.npz",
+  "n_eval": 296,
+  "n_train": 2857,
+  "epochs": 30,
+  "iterations": 660,
+  "hyperparams": {
+    "epochs": 30,
+    "batch_size": 128,
+    "z_dim": 100,
+    "lr": 0.0002,
+    "beta1": 0.5,
+    "ngf": 64,
+    "ndf": 64,
+    "hflip": true
+  },
+  "protocol": "Inception v3 torchvision (ImageNet), images 64x64 redimensionnees en 299x299 ; genere vs jeu d'evaluation ; reference = sous-ensemble d'entrainement de meme taille vs evaluation",
+  "duration_s": 383.4
+}

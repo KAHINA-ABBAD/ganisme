@@ -1,0 +1,15 @@
+{
+  "processed": 6779,
+  "complete": true,
+  "status": {
+    "processed": 6779,
+    "failed": 1141,
+    "skipped": 80
+  },
+  "median_short_side_px": 850.0,
+  "share_ratio_within_10pct": 0.9436,
+  "grayscale": 14,
+  "median_brightness": 0.308,
+  "near_duplicate_candidates": 1615,
+  "near_duplicate_confirmed": 3
+}

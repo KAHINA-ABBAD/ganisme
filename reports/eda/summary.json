@@ -1,0 +1,62 @@
+{
+  "source": "data\\raw\\data.csv",
+  "n_catalogue": 52867,
+  "n_paintings": 32438,
+  "n_artists": 3663,
+  "n_works": 25541,
+  "n_detail_views": 4987,
+  "share_known_year": 0.88,
+  "share_with_dimensions": 0.6958,
+  "median_aspect_ratio": 0.852,
+  "share_year_inside_timeframe": 0.8181,
+  "types": {
+    "religious": 13517,
+    "portrait": 4810,
+    "landscape": 4103,
+    "mythological": 3202,
+    "genre": 2772,
+    "still-life": 1405,
+    "other": 970,
+    "historical": 943,
+    "interior": 636,
+    "study": 80
+  },
+  "schools_top10": {
+    "Italian": 13743,
+    "French": 4410,
+    "Dutch": 4375,
+    "Flemish": 3697,
+    "German": 1923,
+    "Spanish": 1250,
+    "English": 681,
+    "Netherlandish": 514,
+    "Austrian": 391,
+    "Hungarian": 345
+  },
+  "techniques": {
+    "oil": 22630,
+    "fresco": 4703,
+    "tempera": 3255,
+    "other": 1575,
+    "pastel": 169,
+    "watercolour": 106
+  },
+  "selection_funnel": {
+    "peintures": 32438,
+    "sans vues de détail": 27451,
+    "+ sans fresques": 24379,
+    "+ ratio connu dans [0.5, 2] ou inconnu": 23228
+  },
+  "candidate_types": {
+    "religious": 7599,
+    "portrait": 4457,
+    "landscape": 3775,
+    "genre": 2396,
+    "mythological": 1975,
+    "still-life": 1334,
+    "other": 641,
+    "historical": 621,
+    "interior": 353,
+    "study": 77
+  }
+}

@@ -1,0 +1,21 @@
+# Environnements et caches Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Donnees locales (garder les fichiers .gitkeep)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Images issues du scraping (256x256, ~270 Mo) et leur manifeste, versionnes
+# pour pouvoir entrainer ailleurs (Colab) sans retelecharger.
+!data/processed/images_256/
+!data/processed/manifest.csv
+
+
+# Checkpoints et echantillons d'entrainement (volumineux)
+runs/

@@ -1,0 +1,28 @@
+{
+  "complete": true,
+  "selected": 8000,
+  "status": {
+    "processed": 6779,
+    "failed": 1141,
+    "skipped": 80
+  },
+  "grayscale_excluded": 14,
+  "near_duplicate_candidates": 1615,
+  "near_duplicate_pairs": 3,
+  "near_duplicates_excluded": 3,
+  "final": {
+    "train": 6105,
+    "eval": 657
+  },
+  "train_size": 64,
+  "rgb_mean": [
+    0.377,
+    0.3118,
+    0.2547
+  ],
+  "rgb_std": [
+    0.2555,
+    0.2351,
+    0.2139
+  ]
+}
