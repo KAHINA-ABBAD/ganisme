@@ -82,7 +82,7 @@ Ganisme/
 ├── reports/
 │   ├── eda/, dataset/     Saved outputs (JSON, figures/*.png) of the notebooks
 │   ├── training/          Metrics (metrics.json) and figures of the trained GAN
-│   └── presentation/      Slide decks (.pptx) and the scripts that build them
+│   └── presentation/      Slide decks (.pptx), oral script and technical questions (PDF)
 ├── runs/                  Training checkpoints and samples (not tracked by Git)
 ├── models/generator.pt   Exported generator weights used by the app (~14 MB)
 ├── app.py                 Streamlit app: generate paintings with the trained GAN
@@ -209,9 +209,11 @@ bash scripts/train_portraits.sh 64 180    # train, evaluate, export (auto-restar
 
 ### Presentations
 
-`reports/presentation/build_presentation_dark.py` builds the slide deck
-`GANisme_sombre.pptx` from the project's real figures and metrics: re-run it to
-refresh the deck after training. Explanations are in the speaker notes.
+`reports/presentation/` holds the slide decks (`GANisme_sombre.pptx` is the one
+presented), the oral script (`commentaires_oral.pdf`) and the likely technical
+questions with short answers (`questions_techniques.pdf`). The speaker notes
+contain the oral script and the questions for each slide.
+`reports/veille/veille_technologique.pdf` answers the 15 research questions.
 
 ### Planned deliverables
 
