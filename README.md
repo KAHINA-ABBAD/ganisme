@@ -67,7 +67,6 @@ particular for mode collapse.
 Ganisme/
 ├── data/
 │   ├── GANisme.docx.pdf   Project brief (French)
-│   ├── prompt             Working guidelines for the AI assistant (French)
 │   ├── raw/               Source data, kept unmodified (not tracked by Git)
 │   │   └── data.csv       Web Gallery of Art catalogue
 │   └── processed/         Derived data (only the two items marked * are tracked by Git)
@@ -164,7 +163,7 @@ Colab for training.
 epoch it saves a full checkpoint (`runs/<name>/last.pt`: weights, optimisers,
 epoch, history and random states) and a grid generated from fixed noise
 vectors, so an interrupted run resumes where it stopped. On a 16-thread CPU an
-epoch over ~7,000 images takes about 80 seconds.
+epoch over ~6,100 images takes about 90 seconds.
 
 `ganisme.evaluate` computes the FID and KID between generated images and the
 evaluation set (never seen in training), a reference FID between two sets of

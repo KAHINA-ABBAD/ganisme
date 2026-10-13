@@ -9,6 +9,7 @@ pas de nus). Les chiffres viennent des resultats reels du projet.
 
 import json
 import random
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -41,7 +42,7 @@ TRAIN = json.loads(TRAIN_JSON.read_text(encoding="utf-8")) if TRAIN_JSON.exists(
 TRAIN_DONE = "fid" in TRAIN
 IS_V0 = "v0" in TRAIN.get("dataset", "")
 MODEL_LABEL = (f"baseline v0 · jeu partiel ({TRAIN['n_train']:,} images)".replace(",", " ") if IS_V0
-               else f"modèle final · {TRAIN.get('n_train', 0):,} images".replace(",", " "))
+               else f"baseline · tous genres · {TRAIN.get('n_train', 0):,} images".replace(",", " "))
 LOG_LINES = (ROOT / "data" / "processed" / "download.log").read_text(encoding="utf-8").splitlines()[-8:]
 _tests = subprocess.run([sys.executable, "-m", "pytest", "-v", "-p", "no:cacheprovider", "--no-header"],
                         cwd=ROOT, env={**__import__("os").environ, "PYTHONPATH": str(ROOT / "src")},
@@ -330,7 +331,7 @@ s = slide_(
 text(s, M, Inches(2.4), Inches(6), Inches(1.3), "GANisme", size=80, bold=True, font=HEAD)
 text(s, M, Inches(3.8), Inches(6), Inches(0.6), "Peindre avec un GAN", size=28, font=HEAD, color=GOLD)
 text(s, M, Inches(5.3), Inches(6), Inches(0.7),
-     ["La Plateforme · Deep Learning", "Équipe : [à compléter]"], size=14, color=MUTED)
+     ["La Plateforme · Deep Learning", "Kahina ABBAD & Pape Ahmed Fall"], size=14, color=MUTED)
 side, gap = Inches(1.2), Inches(0.08)
 for k, path in enumerate(safe(20, 1)):
     r, c = divmod(k, 4)
@@ -341,15 +342,16 @@ s = slide_(
     "Le plan suit les attendus de l'énoncé : d'abord la veille scientifique sur les GAN, "
     "puis l'analyse du catalogue, la constitution du jeu d'images, le modèle, "
     "et enfin l'organisation de l'équipe et la conclusion.")
-header(s, "Plan", "Du catalogue au générateur")
-steps = ["Veille", "Catalogue", "Images", "Modèle", "Bilan"]
-sw = Inches(2.2)
+header(s, "Plan", "Les six étapes de notre projet")
+steps = ["Veille technologique", "Analyse de données (EDA)", "Prétraitement de données", "Architecture",
+         "Évaluation", "Conclusion"]
+sw = Inches(1.86)
 for k, word in enumerate(steps):
-    x = M + k * (sw + Inches(0.27))
-    card(s, x, Inches(2.1), sw, Inches(3.6))
-    circle(s, x + (sw - Inches(0.9)) / 2, Inches(2.5), Inches(0.9), str(k + 1), size=24)
-    text(s, x, Inches(3.75), sw, Inches(0.6), word, size=24, bold=True, font=HEAD, align=PP_ALIGN.CENTER)
-    picture(s, safe(5, 40)[k], x + (sw - Inches(1.0)) / 2, Inches(4.45), Inches(1.0))
+    x = M + k * (sw + Inches(0.19))
+    card(s, x, Inches(2.4), sw, Inches(2.9))
+    circle(s, x + (sw - Inches(0.8)) / 2, Inches(2.8), Inches(0.8), str(k + 1), size=22)
+    text(s, x + Inches(0.1), Inches(3.85), sw - Inches(0.2), Inches(1.1), word, size=17, bold=True, font=HEAD,
+         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
 # ================================================================ Veille
 divider("01", "Veille", ["15 questions", "GAN", "DCGAN"],
@@ -390,6 +392,34 @@ arrow(s, x_d + Inches(2.32), Inches(3.7))
 text(s, x_d + Inches(2.8), Inches(3.35), Inches(2.3), Inches(1.0), ["gradient", "→ G apprend"],
      size=18, bold=True, color=GOLD, anchor=MSO_ANCHOR.MIDDLE)
 trap(s, "Le GAN sert à classer", "Il sert à créer de nouvelles images")
+
+# Q3-Q5 regroupees (version 25 diapositives)
+s = slide_(
+    "Q3 — Rôles : le générateur crée des images ; le discriminateur est un classifieur binaire vrai/faux qui "
+    "sert de critique au générateur. Un modèle DISCRIMINANT apprend p(y|x) : une frontière entre classes "
+    "(portrait ou paysage ?). Un modèle GÉNÉRATIF apprend p(x), la forme des données elles-mêmes, et peut donc "
+    "produire de nouveaux exemples. Dans un GAN, le discriminateur est discriminant, mais le GAN dans son "
+    "ensemble est génératif : D n'est qu'un outil d'entraînement, c'est G qu'on garde à la fin.\n\n"
+    "Q4 — Entrées : le générateur reçoit un vecteur de bruit z (par exemple 100 nombres tirés d'une loi "
+    "normale), plus une étiquette dans un GAN conditionnel. Le discriminateur reçoit une image, vraie ou "
+    "générée, et renvoie une probabilité : 0,87 veut dire « vraie à 87 % ».\n\n"
+    "Q5 — Densité implicite : un modèle explicite (VAE, flows) sait calculer p(x), la probabilité d'une image "
+    "donnée. Un GAN ne le sait pas : il sait seulement tirer de nouvelles images en passant du bruit dans G. "
+    "La distribution n'existe qu'à travers cet échantillonnage : on dit qu'elle est implicite.")
+header(s, "Veille · Q3 à Q5", "Ce qui distingue un modèle génératif")
+for k, (num, title, words) in enumerate([
+    ("Q3", "Rôles", ["G : créer", "D : juger", "Discriminant : p(y|x)", "Génératif : p(x)"]),
+    ("Q4", "Entrées", ["G ← bruit z (100)", "D ← une image", "Sortie D : probabilité"]),
+    ("Q5", "Densité implicite", ["Pas de formule p(x)", "Échantillonnage seul", "VAE : explicite"]),
+]):
+    x = M + k * (cw + Inches(0.3))
+    card(s, x, Inches(1.8), cw, Inches(4.0))
+    circle(s, x + Inches(0.3), Inches(2.05), Inches(0.75), num, size=18)
+    text(s, x + Inches(1.25), Inches(2.15), cw - Inches(1.45), Inches(0.6), title, size=22, bold=True,
+         font=HEAD, color=GOLD)
+    for j, word in enumerate(words):
+        chip(s, x + Inches(0.3), Inches(3.05) + j * Inches(0.66), cw - Inches(0.6), word, size=16, h=Inches(0.55))
+trap(s, "Le GAN est un modèle discriminant", "D l'est, mais le GAN est génératif")
 
 # Q3 : discriminant vs generatif (nuages de points)
 s = slide_(
@@ -479,7 +509,7 @@ s = slide_(
     "Le gradient (flèche dorée) traverse D sans le modifier, jusqu'à G. On met à jour SEULEMENT G.\n\n"
     "Ce que nos recherches montrent : on n'entraîne jamais G et D en même temps sur la même perte. À chaque pas, l'un des deux est "
     "figé, sinon D apprendrait à se laisser tromper.")
-header(s, "Veille · Q6", "Un pas pour D, un pas pour G")
+header(s, "Veille · Q6 et Q9", "Entraîner, puis converger")
 for k, (title, g_fill, d_fill) in enumerate((("1 · D apprend", STONE, RED), ("2 · G apprend", RED, STONE))):
     px = M + k * (Inches(6.23))
     card(s, px, Inches(1.8), Inches(5.9), Inches(4.0))
@@ -501,7 +531,13 @@ for k, (title, g_fill, d_fill) in enumerate((("1 · D apprend", STONE, RED), ("2
         label(s, px + Inches(2.0), Inches(2.5), Inches(2.0), "vraies = 1 · fausses = 0", size=13, color=MUTED, bold=False)
     else:
         label(s, px + Inches(2.0), Inches(2.5), Inches(2.0), "−log D(G(z))", size=14, color=MUTED, bold=False)
-trap(s, "G et D apprennent ensemble", "On alterne : l'autre réseau est figé")
+trap(s, "La perte de G baisse : il progresse", "On alterne G et D, on vise D = 0,5")
+s.notes_slide.notes_text_frame.text += (
+    "\n\nQ9 — Convergence : on ne cherche pas le minimum d'une perte, mais un équilibre entre G et D. En théorie, "
+    "les faux suivent exactement la distribution réelle et D répond 0,5 partout. En pratique, les pertes "
+    "oscillent et ne disent pas si G progresse. Si D est trop fort, D(G(z)) ≈ 0 et les gradients de G "
+    "s'évanouissent. Risque principal : le mode collapse, quand G ne produit plus que quelques variantes qui "
+    "trompent D. D'où le suivi visuel des images pendant l'entraînement.")
 
 # Q7 : precision / rappel / FID
 s = slide_(
@@ -516,7 +552,7 @@ s = slide_(
     "• Et toujours : inspection visuelle, et recherche des plus proches voisins pour vérifier que G ne "
     "recopie pas les images d'entraînement.\n\n"
     "Ce que nos recherches montrent : une perte basse ne veut pas dire de belles images. On croise plusieurs métriques et l'œil.")
-header(s, "Veille · Q7", "Fidélité et diversité")
+header(s, "Veille · Q7 et Q8", "Évaluer, et avec combien d'images")
 card(s, M, Inches(1.8), Inches(7.4), Inches(4.0))
 o1 = dot(s, M + Inches(2.9), Inches(3.8), Inches(3.4), None, outline=MUTED)
 o2 = dot(s, M + Inches(4.3), Inches(3.8), Inches(2.4), None, outline=GOLD)
@@ -530,7 +566,14 @@ for j, (name, desc, fill) in enumerate((("Précision", "réalisme", RED), ("Rapp
     y = Inches(1.8) + j * Inches(0.82)
     chip(s, Inches(8.3), y, Inches(2.0), name, fill=fill, size=16, h=Inches(0.65))
     label(s, Inches(10.45), y + Inches(0.1), Inches(2.3), desc, size=16, color=MUTED, bold=False, align=PP_ALIGN.LEFT)
-trap(s, "Perte basse = bonnes images", "Croiser métriques et inspection visuelle")
+trap(s, "Il faut des millions d'images", "Ça dépend : nous en avons visé ~8 000")
+s.notes_slide.notes_text_frame.text += (
+    "\n\nQ8 — Quantité de données : pas de seuil universel, cela dépend de la résolution et de la diversité. "
+    "MetFaces : 1 336 portraits suffisent à StyleGAN2-ADA grâce à l'augmentation adaptative ; CelebA, environ "
+    "200 000 visages, est le jeu classique du DCGAN ; LSUN chambres, environ 3 millions. Avec trop peu de "
+    "données, D sur-apprend et G recopie. Notre choix : environ 8 000 peintures, dans la cible 5 000 à 10 000 "
+    "du cours. Plus les images sont variées (10 genres, 7 siècles chez nous), plus il en faut : c'est ce que "
+    "notre expérience sur les portraits a confirmé.")
 
 # Q8 : taille des jeux de donnees (echelle log)
 s = slide_(
@@ -627,7 +670,7 @@ s = slide_(
     "• 2017 : CycleGAN, traduction sans paires (photo → tableau de Monet) ; WGAN-GP, entraînement plus "
     "stable grâce à la distance de Wasserstein.\n"
     "• 2018 : StyleGAN, visages ultra-réalistes (site thispersondoesnotexist).")
-header(s, "Veille · Q10–Q11", "Dix ans de variantes")
+header(s, "Veille · Q10 à Q12", "Variantes, et CNN contre GAN")
 y0 = Inches(3.6)
 line(s, M, y0, W - M, y0, STONE, 3)
 events = [("2014", "GAN · cGAN", "par classe"), ("2015", "DCGAN", "images"), ("2016", "Pix2Pix · SRGAN", "croquis → photo"),
@@ -641,7 +684,14 @@ for k, (year, names, use) in enumerate(events):
     label(s, cx - step // 2, Inches(4.5), step, use, size=15, color=MUTED, bold=False, h=Inches(0.45))
 chip(s, M, Inches(1.85), Inches(3.4), "+ nettes · rapides", fill=CARD2, size=16)
 chip(s, M + Inches(3.6), Inches(1.85), Inches(3.4), "− instables · collapse", fill=RED, size=16)
-chip(s, M, Inches(5.3), Inches(3.4), "DCGAN = notre baseline", fill=CARD2, size=15, color=GOLD)
+chip(s, M, Inches(5.3), Inches(7.6), "Q12 · CNN = architecture · GAN = méthode · DCGAN = les deux",
+     fill=CARD2, size=15, color=GOLD)
+s.notes_slide.notes_text_frame.text += (
+    "\n\nQ12 — Un CNN est une ARCHITECTURE de réseau, en général utilisée pour classer des images. Un GAN est une "
+    "MÉTHODE D'ENTRAÎNEMENT à deux réseaux, quelle que soit leur architecture. Le vanilla GAN de 2014 utilisait "
+    "des couches denses et restait instable sur des images complexes. Le DCGAN (2015) est un GAN dont G et D "
+    "sont des CNN : convolutions à pas, convolutions transposées dans G, BatchNorm, ReLU et LeakyReLU, tanh en "
+    "sortie. Résultat : un entraînement bien plus stable sur des images, jusqu'à environ 64×64. C'est notre baseline.")
 
 # Q12 : CNN + GAN = DCGAN
 s = slide_(
@@ -705,7 +755,7 @@ s = slide_(
     "Q15 — Intérêt de générer des données : compléter des données rares (imagerie médicale), produire des "
     "données synthétiques anonymes, offrir un outil de création aux artistes, explorer des styles.\n"
     "Notre position : c'est utile à condition que le contenu synthétique reste identifié comme tel.")
-header(s, "Veille · Q14–Q15", "Risques et intérêt")
+header(s, "Veille · Q13 à Q15", "ChatGPT, risques et intérêt")
 risks = [("Deepfakes", RED), ("Désinformation", RED), ("Biais", CARD2), ("Droits d'auteur", CARD2),
          ("Vie privée", CARD2)]
 label(s, M, Inches(1.8), Inches(6), "Q14 · Dangers", size=22, color=GOLD, align=PP_ALIGN.LEFT)
@@ -717,6 +767,12 @@ label(s, Inches(7.3), Inches(1.95), Inches(5), "Q15 · Pourquoi générer ?", si
 for j, word in enumerate(["Données rares", "Anonymisation", "Création artistique"]):
     chip(s, Inches(7.3), Inches(2.75) + j * Inches(0.85), Inches(5.1), word, fill=CARD2, size=18, h=Inches(0.65))
 label(s, Inches(7.3), Inches(5.25), Inches(5.1), "si le synthétique est signalé", size=16, color=GOLD, bold=False)
+chip(s, M, Inches(5.4), Inches(5.8), "Q13 · ChatGPT = GPT, un transformer d'OpenAI", fill=RED, size=15, h=Inches(0.65))
+s.notes_slide.notes_text_frame.text = (
+    "Q13 — Le chatbot est ChatGPT. Il repose sur GPT (Generative Pre-trained Transformer), de la famille des "
+    "transformers : de grands modèles de langage qui prédisent le mot suivant, affinés grâce aux retours "
+    "humains (RLHF). Il a été développé par OpenAI. Ce n'est pas un GAN, et DALL-E 2 non plus (modèle de "
+    "diffusion).\n\n" + s.notes_slide.notes_text_frame.text)
 
 # Synthese de la veille
 s = slide_(
@@ -850,18 +906,54 @@ s = slide_(
     "Le graphique (notebook 02_dataset) compare le catalogue (gris) et notre sélection (bleu) : le "
     "religieux passe de 42 % à 14 %, l'école italienne de 42 % à 24 %.\n"
     "Les œuvres sont réparties 90 % entraînement / 10 % évaluation, par œuvre : jamais des deux côtés.")
-header(s, "Images", "8 000 peintures équilibrées")
+header(s, "Images", "De 32 438 peintures à notre jeu d'images")
 funnel = EDA["selection_funnel"]
-steps = [funnel["peintures"], funnel["sans vues de détail"], funnel["+ sans fresques"],
-         funnel["+ ratio connu dans [0.5, 2] ou inconnu"], len(MANIFEST)]
-fw = Inches(2.1)
-for k, value in enumerate(steps):
-    x = M + k * (fw + Inches(0.4))
-    chip(s, x, Inches(1.8), fw, fmt(value), fill=RED if k == len(steps) - 1 else CARD2, size=20, h=Inches(0.7))
-    if k < len(steps) - 1:
-        arrow(s, x + fw + Inches(0.05), Inches(2.0), Inches(0.3))
-figure(s, FIG_DS / "01_selection_vs_catalogue.png", M, Inches(2.8), Inches(12.1), Inches(4.1),
-       "Catalogue vs sélection · notebook 02_dataset")
+counts = [funnel["peintures"], funnel["sans vues de détail"], funnel["+ sans fresques"],
+          funnel["+ ratio connu dans [0.5, 2] ou inconnu"], len(MANIFEST)]
+exits = [None, ("vues de détail", "zooms sur un autre tableau"), ("fresques", "photos de murs et de voûtes"),
+         ("formats trop allongés", "frises, panneaux étroits"), None]
+# Entonnoir centre : chaque barre = ce qu'il reste ; a droite, ce qui sort a chaque etape.
+cx, bar_h, step = M + Inches(2.9), Inches(0.74), Inches(0.92)
+for k, value in enumerate(counts):
+    y = Inches(1.8) + k * step
+    w_ = Inches(5.8) - k * Inches(0.85)
+    last = k == len(counts) - 1
+    card(s, cx - w_ // 2, y, w_, bar_h, fill=RED if last else CARD2)
+    text(s, cx - w_ // 2, y, w_, bar_h, fmt(value), size=24, bold=True, font=HEAD,
+         color=TEXT if last else GOLD, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    lx = M + Inches(6.05)
+    if k == 0:
+        content = [[("peintures dans le catalogue", {"bold": True})]]
+    elif last:
+        content = [[("tirées au sort", {"bold": True})], [("genres équilibrés · 30 max. par artiste", {"size": 12, "color": MUTED})]]
+    else:
+        name, why = exits[k]
+        content = [[(f"− {fmt(counts[k - 1] - value)} {name}", {"bold": True, "color": RED})],
+                   [(why, {"size": 12, "color": MUTED})]]
+    text(s, lx, y, Inches(3.2), bar_h, content, size=15, anchor=MSO_ANCHOR.MIDDLE, space_after=0)
+
+# Colonne resultat : de la selection au jeu d'entrainement.
+rx, rw = Inches(9.95), Inches(2.78)
+used = CHECKS["processed"] - CHECKS["grayscale"] - CHECKS["near_duplicate_confirmed"]
+label(s, rx, Inches(1.75), rw, "Résultat", size=18, color=GOLD)
+for j, (value, sub) in enumerate([(len(MANIFEST), "sélectionnées"), (CHECKS["processed"], "récupérées"),
+                                  (used, "après contrôle (noir et blanc, doublons)")]):
+    y = Inches(2.25) + j * Inches(1.15)
+    card(s, rx, y, rw, Inches(0.8), fill=CARD2)
+    text(s, rx, y, rw, Inches(0.8), [[(fmt(value), {"size": 20, "bold": True, "font": HEAD, "color": GOLD})],
+                                       [(sub, {"size": 11, "color": MUTED})]],
+         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, space_after=0)
+    shape(s, MSO_SHAPE.DOWN_ARROW, rx + rw // 2 - Inches(0.15), y + Inches(0.85), Inches(0.3), Inches(0.28), STONE)
+half = (rw - Inches(0.1)) // 2
+for j, (value, sub, fill) in enumerate([(TRAIN["n_train"], "entraînement", RED), (TRAIN["n_eval"], "évaluation", CARD2)]):
+    x = rx + j * (half + Inches(0.1))
+    card(s, x, Inches(5.7), half, Inches(0.8), fill=fill)
+    text(s, x, Inches(5.7), half, Inches(0.8), [[(fmt(value), {"size": 18, "bold": True, "font": HEAD})],
+                                                 [(sub, {"size": 11})]],
+         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, space_after=0)
+text(s, M, Inches(6.5), Inches(9.0), Inches(0.35),
+     "Tirage reproductible · une image par œuvre · évaluation sur des œuvres jamais vues à l'entraînement",
+     size=12, color=MUTED)
 
 s = slide_(
     "Le scraping récupère chaque image sur le site wga.hu. Un fichier manifeste suit chaque image avec "
@@ -928,7 +1020,7 @@ s = slide_(
     "• Cadres visibles sur certaines photos, ou mur autour de l'œuvre : du bruit, en faible proportion.\n"
     "• Le sujet est souvent centré : le recadrage carré central le conserve.\n"
     "Les images de cette diapositive sont de vraies images de notre jeu, après recadrage en 256×256.")
-header(s, "Images · Q5", "Ce que montrent les images")
+header(s, "Images · Q5", "Ce que montrent les images, et le prétraitement")
 rows_g = ["portrait", "landscape", "still-life", "interior", "genre"]
 side, gap = Inches(0.95), Inches(0.08)
 for r, genre in enumerate(rows_g):
@@ -938,9 +1030,16 @@ for r, genre in enumerate(rows_g):
     random.Random(r).shuffle(ids)
     for c, image_id in enumerate(ids[:6]):
         picture(s, image_path(image_id), M + Inches(1.6) + c * (side + gap), y, side)
-for j, (word, fill) in enumerate([("Tons sombres", CARD2), ("Cadres visibles", CARD2), ("Sujet centré", CARD2),
-                                  ("Haute résolution", CARD2)]):
-    chip(s, Inches(9.0), Inches(2.2) + j * Inches(1.0), Inches(3.7), word, fill=fill, size=18, h=Inches(0.7))
+for j, (word, fill) in enumerate([("Formats variés → carré central", CARD2), ("Tons sombres → couleurs gardées", CARD2),
+                                  ("Cadres visibles → bruit toléré", CARD2), ("Haute résolution → 64×64", CARD2),
+                                  ("Pixels → [−1, 1] (tanh)", RED), ("Miroir horizontal seulement", CARD2)]):
+    chip(s, Inches(8.6), Inches(1.85) + j * Inches(0.82), Inches(4.13), word, fill=fill, size=14, h=Inches(0.65))
+s.notes_slide.notes_text_frame.text += (
+    "\n\nConséquences sur le prétraitement, chacune justifiée par une observation : recadrage carré central (le "
+    "DCGAN produit des carrés, le sujet est centré) ; 64×64 pixels (baseline rapide, 128×128 possible sans "
+    "retélécharger) ; pixels normalisés entre −1 et 1 (sortie tanh du générateur) ; couleurs gardées telles quelles "
+    "(c'est le style à apprendre) ; exclusion des 14 reproductions en noir et blanc et des 3 vrais quasi-doublons ; "
+    "miroir horizontal aléatoire seulement (un ciel en bas ne serait pas plausible).")
 
 s = slide_(
     "Couleurs mesurées sur toutes les images téléchargées (notebook 02_dataset).\n"
@@ -1153,10 +1252,10 @@ if TRAIN_DONE and not IS_V0 and CMP_JSON.exists():
         "mode collapse ; on voit une matière picturale (ocres, clairs-obscurs, ciels) mais aucun objet "
         "identifiable, et un nouvel artefact : des traînées claires en diagonale. Les plus proches voisins sont "
         "des peintures différentes : le modèle crée, il ne recopie pas.")
-    header(s, "Énoncé · Q8", "De la v0 au modèle final")
+    header(s, "Énoncé · Q8", "De la première version à la baseline")
     chip(s, Inches(8.4), Inches(0.85), Inches(4.3), f"même évaluation · {cmp['n_eval']} peintures", fill=CARD2, size=13, h=Inches(0.5))
     data = CategoryChartData()
-    data.categories = ["Baseline v0", "Modèle final", "Réel vs réel"]
+    data.categories = ["Première version", "Baseline", "Réel vs réel"]
     data.add_series("FID", [v0["fid"], v1["fid"], ref["fid"]])
     chart = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, M, Inches(1.75), Inches(6.6), Inches(4.9), data).chart
     dark_chart(chart, size=14)
@@ -1239,7 +1338,7 @@ if P64_JSON.exists() and DL16.exists():
         "Avant d'entraîner, nous avons vérifié 16 images à la sortie du DataLoader, comme le recommande le cours : "
         "format (16, 3, 128, 128), valeurs entre −1 et 1, cadrage centré sans déformation. Limite : le jeu reste "
         "imparfaitement homogène (portraits en pied, de groupe, équestres).")
-    header(s, "Cours · traitement d'images", "Un jeu homogène : les portraits")
+    header(s, "Portraits", "Un jeu homogène : les portraits")
     figure(s, DL16, M, Inches(1.75), Inches(12.1), Inches(3.4), "16 images à la sortie du DataLoader (après pipeline)")
     for j, (word, fill) in enumerate([("3 737 portraits", RED), ("Dossier 128×128", CARD2),
                                       ("Resize → Crop → Flip → Tensor → Normalize", CARD2), ("[−1, 1] vérifié", CARD2)]):
@@ -1258,21 +1357,32 @@ if P64_JSON.exists() and DL16.exists():
         "centrée, visage clair, buste, fond sombre, perruques ou cols blancs). Les visages restent flous, ce qui est "
         "normal en 64×64. Les plus proches voisins sont des tableaux différents : pas de recopie.\n"
         "Conclusion : la règle d'or du cours est vérifiée sur nos données.")
-    header(s, "Cours · traitement d'images", "Portraits 64×64 : la règle se vérifie")
+    header(s, "Portraits", "Portraits : 64×64 puis 128×128")
     figure(s, ROOT / "reports" / "portraits_64" / "figures" / "samples.png", M, Inches(1.75), Inches(4.9), Inches(4.9),
            "Portraits générés (64×64)")
-    rows = [("Tous genres (v1)", v1m["fid"], v1m["fid_real"], CARD2), ("Portraits 64×64", p64["fid"], p64["fid_real"], RED)]
+    rows = [("Baseline (tous genres)", v1m["fid"], v1m["fid_real"], CARD2), ("Portraits 64×64", p64["fid"], p64["fid_real"], RED)]
+    if p128:
+        rows.append(("Portraits 128×128", p128["fid"], p128["fid_real"], CARD2))
     label(s, Inches(5.85), Inches(1.85), Inches(6.9), "FID   ·   référence   ·   écart", size=15, color=GOLD,
           align=PP_ALIGN.LEFT)
     for j, (name, f, ref, fill) in enumerate(rows):
-        y = Inches(2.45) + j * Inches(1.05)
-        card(s, Inches(5.85), y, Inches(6.88), Inches(0.9), fill=fill)
-        text(s, Inches(6.1), y, Inches(3.0), Inches(0.9), name, size=17, bold=True, anchor=MSO_ANCHOR.MIDDLE)
-        text(s, Inches(9.1), y, Inches(3.4), Inches(0.9), f"{f:.0f}  ·  {ref:.0f}  ·  ×{f / ref:.1f}".replace(".", ","),
+        y = Inches(2.45) + j * Inches(0.92)
+        card(s, Inches(5.85), y, Inches(6.88), Inches(0.8), fill=fill)
+        text(s, Inches(6.1), y, Inches(3.0), Inches(0.8), name, size=17, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+        text(s, Inches(9.1), y, Inches(3.4), Inches(0.8), f"{f:.0f}  ·  {ref:.0f}  ·  ×{f / ref:.1f}".replace(".", ","),
              size=20, bold=True, font=HEAD, anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.RIGHT)
-    for j, (word, fill) in enumerate([("Portraits reconnaissables", CARD2), ("Pas de recopie", CARD2),
-                                      ("Visages encore flous", RED)]):
-        chip(s, Inches(5.85), Inches(4.75) + j * Inches(0.65), Inches(6.88), word, fill=fill, size=15, h=Inches(0.55))
+    for j, (word, fill) in enumerate([("64×64 : portraits reconnaissables, pas de recopie", CARD2),
+                                      ("128×128 : moins bon, 2 600 itérations seulement", RED)]):
+        chip(s, Inches(5.85), Inches(5.35) + j * Inches(0.66), Inches(6.88), word, fill=fill, size=15, h=Inches(0.56))
+    if p128:
+        s.notes_slide.notes_text_frame.text += (
+            "\n\nDeuxième règle du cours : passer ensuite en 128×128. Nous avons ajouté une couche dans chaque réseau "
+            "(12,8 millions de paramètres pour le générateur contre 3,6). Une époque prend 5 min 20 sur notre "
+            f"processeur : faute de temps, 100 époques seulement ({p128['iterations']} itérations contre "
+            f"{p64['iterations']} en 64×64). Résultat : FID {p128['fid']:.0f} contre {p128['fid_real']:.0f}, soit "
+            f"{p128['fid'] / p128['fid_real']:.1f} fois la référence ; traînées horizontales, couleurs saturées. Un modèle "
+            "3,5 fois plus gros demande plus d'entraînement, pas moins : nous gardons le 64×64, et le 128×128 est la "
+            "prochaine étape, sur GPU.")
 
     s = slide_(
         "Deuxième règle du cours : commencer en 64×64, puis passer en 128×128 pour gagner en détails. Nous avons "
@@ -1289,7 +1399,7 @@ if P64_JSON.exists() and DL16.exists():
            "saturées, silhouettes moins lisibles. Un modèle 3,5 fois plus gros demande plus d'entraînement, pas moins. "
            "Nous gardons le 64×64 comme modèle principal ; le 128×128 est la prochaine étape, sur GPU."
            if p128 else "ÉTAT : entraînement en cours ; résultats ajoutés automatiquement à la fin."))
-    header(s, "Cours · traitement d'images", "Passer en 128×128")
+    header(s, "Portraits", "Passer en 128×128")
     result_figure(s, ROOT / "reports" / "portraits_128" / "figures" / "samples.png", M, Inches(1.75), Inches(4.9),
                   Inches(4.9), "Portraits générés (128×128)")
     big_number(s, Inches(5.85), Inches(1.95), Inches(3.4), "×4", "pixels par image", size=44)
@@ -1310,7 +1420,7 @@ s = slide_(
 header(s, "Équipe", "Organisation")
 for k, (title, words) in enumerate([("Outils", ["GitHub", "[Trello / Azure]"]),
                                     ("Rituels", ["[Points d'équipe]", "[Revues]"]),
-                                    ("Rôles", ["[Membre 1]", "[Membre 2]", "[Membre 3]"])]):
+                                    ("Équipe", ["Kahina ABBAD", "Pape Ahmed Fall"])]):
     x = M + k * (cw + Inches(0.3))
     card(s, x, Inches(1.85), cw, Inches(4.9))
     circle(s, x + Inches(0.35), Inches(2.15), Inches(0.75), str(k + 1), size=18)
@@ -1329,8 +1439,13 @@ s = slide_(
     "Pistes : WGAN-GP si le mode collapse apparaît, passage en 128×128, GAN conditionnel pour choisir le "
     "genre, augmentation adaptative (ADA), et l'application Streamlit pour rendre le générateur accessible.")
 header(s, "Énoncé · Q9", "Conclusion")
-cols = [("Acquis", ["Catalogue analysé", "Pipeline du cours", "Portraits reconnaissables"], CARD2),
-        ("Difficultés", ["Serveur lent", "Faux doublons", "Genres déséquilibrés"], RED),
+s.notes_slide.notes_text_frame.text += (
+    "\n\nToutes les questions de l'énoncé sont traitées : les 15 questions de veille (diapositives 3 à 8), puis "
+    "les questions 1 à 9 de GANisme (catalogue, peintures, analyse, scraping, visualisation et prétraitement, "
+    "architecture et pertes, entraînement, type et hyperparamètres, évaluation, conclusion), et l'application "
+    "Streamlit de GANisme à l'infini.")
+cols = [("Acquis", ["Catalogue analysé", "Pipeline d'images", "Portraits reconnaissables"], CARD2),
+        ("Difficultés", ["Images abstraites", "Faux doublons", "Calcul sur processeur"], RED),
         ("Pistes", ["WGAN-GP", "GAN conditionnel", "GPU pour le 128×128"], CARD2)]
 for k, (title, words, fill) in enumerate(cols):
     x = M + k * (cw + Inches(0.3))
@@ -1354,12 +1469,12 @@ if (ROOT / "app.py").exists() and (ROOT / "reports" / "app" / "preview_seed42.pn
         "fois grâce au cache de Streamlit. L'interface est couverte par des tests automatiques (AppTest).\n"
         "Lancement : streamlit run app.py")
     header(s, "GANisme à l'infini", "L'application Streamlit")
-    figure(s, ROOT / "reports" / "app" / "preview_seed42.png", M, Inches(1.75), Inches(5.0), Inches(4.9),
-           "Grille réelle produite par l'application (graine 42)")
-    for j, word in enumerate(["Graine reproductible", "1 à 36 peintures", "Agrandissement sans flou",
-                              "Téléchargement PNG"]):
-        chip(s, Inches(6.0), Inches(1.9) + j * Inches(0.8), Inches(6.7), word, fill=CARD2, size=17, h=Inches(0.62))
-    terminal(s, Inches(6.0), Inches(5.2), Inches(6.7), Inches(1.3), ["streamlit run app.py"], "Lancement")
+    figure(s, ROOT / "reports" / "presentation" / "interface.png", M, Inches(1.65), Inches(12.13), Inches(4.4),
+           "Capture de l'application : la peinture n° 460596 et le schéma de sa génération")
+    for j, word in enumerate(["Une peinture à la fois", "Bruit → générateur → image", "Note du discriminateur",
+                              "Collections · Téléchargement"]):
+        chip(s, M + j * Inches(3.08), Inches(6.3), Inches(2.95), word, fill=RED if j == 1 else CARD2, size=14,
+             h=Inches(0.55))
 
 # ================================================================ Couverture de l'enonce
 s = slide_(
@@ -1384,6 +1499,78 @@ for col, items in enumerate((items_left, items_right)):
         fill = CARD2 if state == "✓" else RED
         chip(s, x, y, w_, f"{name}  {state}", fill=fill, size=13 if col == 0 else 14, h=Inches(0.66))
 
+
+KEEP = [
+    "GANisme", "Les six étapes de notre projet",
+    "Deux réseaux en compétition", "Ce qui distingue un modèle génératif", "Entraîner, puis converger",
+    "Évaluer, et avec combien d'images", "Variantes, et CNN contre GAN", "ChatGPT, risques et intérêt",
+    "Les chiffres clés", "Déséquilibre des genres", "Quatre découvertes dans les données",
+    "De 32 438 peintures à notre jeu d'images", "Ce que montrent les images, et le prétraitement",
+    "Un bug révélé par les visuels",
+    "Architecture et fonctions de perte", "Un DCGAN, avec les réglages du papier", "Entraînement",
+    "Évaluation du générateur", "De la première version à la baseline",
+    "Un jeu homogène : les portraits", "Portraits : 64×64 puis 128×128",
+    "L'application Streamlit", "Organisation", "Conclusion",
+]
+id_list = prs.slides._sldIdLst
+entries = list(id_list)
+titles = [set([sh.text_frame.text for sh in sl.shapes if sh.has_text_frame and sh.text_frame.text.strip()][:2])
+          for sl in prs.slides]  # surtitre + titre de chaque diapositive (pas le contenu)
+order = []
+for t in KEEP:
+    found = [i for i, texts in enumerate(titles) if t in texts]
+    assert len(found) == 1, f"titre introuvable ou ambigu : {t} -> {found}"
+    order.append(found[0])
+for i, entry in enumerate(entries):
+    id_list.remove(entry)
+    if i not in order:
+        prs.part.drop_rel(entry.rId)
+for i in order:
+    id_list.append(entries[i])
+assert len(prs.slides) == len(KEEP) <= 25
+
+# Texte oral adresse au jury (une note par diapositive, dans l'ordre de KEEP).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from notes_jury import NOTES  # noqa: E402
+
+assert len(NOTES) == len(prs.slides), (len(NOTES), len(prs.slides))
+for slide, note in zip(prs.slides, NOTES):
+    slide.notes_slide.notes_text_frame.text = note
+
+# Presentation « projet », sans numeros de questions ni reference a l'enonce.
+for slide in prs.slides:
+    numbering = 0
+    for shp in slide.shapes:
+        if not shp.has_text_frame:
+            continue
+        for par in shp.text_frame.paragraphs:
+            for run in par.runs:
+                t = run.text
+                if t.startswith("ÉNONCÉ"):
+                    t = "BILAN" if "Q9" in t else "MODÈLE"
+                t = re.sub(r"\s*·\s*Q\d+(?:\s*(?:–|À|ET)\s*Q\d+)*$", "", t)  # surtitres « VEILLE · Q1–Q2 »
+                t = re.sub(r"^Q\d+\s*·\s*", "", t)                               # « Q14 · Dangers »
+                if re.fullmatch(r"Q\d+", t):                                      # pastilles numerotees
+                    numbering += 1
+                    t = str(numbering)
+                run.text = t
+# Surtitres = les six parties du plan.
+SECTIONS = {**{i: "VEILLE TECHNOLOGIQUE" for i in range(3, 9)},
+            **{i: "ANALYSE DE DONNÉES (EDA)" for i in range(9, 12)},
+            **{i: "PRÉTRAITEMENT DE DONNÉES" for i in range(12, 15)},
+            **{i: "ARCHITECTURE" for i in range(15, 18)},
+            **{i: "ÉVALUATION" for i in range(18, 22)},
+            **{i: "CONCLUSION" for i in range(22, 25)}}
+for i, slide in enumerate(prs.slides, 1):
+    if i in SECTIONS:
+        kicker = next(shp for shp in slide.shapes if shp.has_text_frame and shp.text_frame.text.strip())
+        kicker.text_frame.paragraphs[0].runs[0].text = SECTIONS[i]
+        for run in kicker.text_frame.paragraphs[0].runs[1:]:
+            run.text = ""
+
+leftover = [r.text for sl in prs.slides for shp in sl.shapes if shp.has_text_frame
+            for par in shp.text_frame.paragraphs for r in par.runs if re.search(r"\bQ\d|ÉNONCÉ", r.text)]
+assert not leftover, leftover
 
 prs.core_properties.title = "GANisme"
 OUT.parent.mkdir(parents=True, exist_ok=True)
